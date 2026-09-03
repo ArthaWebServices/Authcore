@@ -1,0 +1,19 @@
+{
+  "name": "@authcore/migration-tool",
+  "version": "1.0.0",
+  "description": "Migrate users from Clerk to AuthCore",
+  "main": "dist/cli.js",
+  "bin": {
+    "authcore-migrate": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^5.0.0",
+    "commander": "^11.0.0",
+    "fs-extra": "^11.0.0"
+  }
+}

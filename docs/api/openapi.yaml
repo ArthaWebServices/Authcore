@@ -1,0 +1,366 @@
+openapi: 3.1.0
+info:
+  title: AuthCore API
+  description: Self-hosted authentication platform
+  version: 1.0.0
+  contact:
+    name: AuthCore Team
+    email: support@authcore.example.com
+
+servers:
+  - url: https://api.authcore.example.com
+    description: Production
+  - url: https://staging.authcore.example.com
+    description: Staging
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        emailVerified: { type: boolean }
+        fullName: { type: string, nullable: true }
+        avatarUrl: { type: string, format: uri, nullable: true }
+        mfaEnabled: { type: boolean }
+        status: { type: string, enum: [active, locked, deleted] }
+        createdAt: { type: string, format: date-time }
+
+    AuthTokens:
+      type: object
+      properties:
+        accessToken: { type: string }
+        expiresIn: { type: integer, description: Seconds until access token expires }
+
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        code: { type: string }
+        message: { type: string }
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags: [Authentication]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 12 }
+                fullName: { type: string }
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /auth/login:
+    post:
+      summary: Authenticate user
+      tags: [Authentication]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200':
+          description: Login successful
+          headers:
+            Set-Cookie:
+              description: HttpOnly refresh token cookie
+              schema: { type: string }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken: { type: string }
+                  expiresIn: { type: integer }
+                  user: { $ref: '#/components/schemas/User' }
+        '401':
+          description: Invalid credentials
+        '423':
+          description: Account locked
+
+  /auth/refresh:
+    post:
+      summary: Refresh access token
+      tags: [Authentication]
+      security: []
+      responses:
+        '200':
+          description: New tokens issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken: { type: string }
+                  expiresIn: { type: integer }
+
+  /auth/logout:
+    post:
+      summary: Logout current session
+      tags: [Authentication]
+      responses:
+        '200': { description: Logged out }
+
+  /auth/me:
+    get:
+      summary: Get current user
+      tags: [User]
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+    patch:
+      summary: Update current user
+      tags: [User]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullName: { type: string }
+                timezone: { type: string }
+                locale: { type: string }
+                avatarUrl: { type: string, format: uri }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /auth/forgot-password:
+    post:
+      summary: Request password reset email
+      tags: [Authentication]
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200': { description: Email sent (if account exists) }
+
+  /auth/reset-password:
+    post:
+      summary: Reset password with token
+      tags: [Authentication]
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, newPassword]
+              properties:
+                token: { type: string }
+                newPassword: { type: string, minLength: 12 }
+      responses:
+        '200': { description: Password reset }
+
+  /auth/change-password:
+    post:
+      summary: Change password (authenticated)
+      tags: [Authentication]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword: { type: string }
+                newPassword: { type: string, minLength: 12 }
+      responses:
+        '200': { description: Password changed }
+
+  /auth/mfa/totp/setup:
+    post:
+      summary: Begin TOTP setup
+      tags: [MFA]
+      responses:
+        '200':
+          description: TOTP secret + QR URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  secret: { type: string }
+                  otpauthUrl: { type: string }
+                  backupCodes: { type: array, items: { type: string } }
+
+  /auth/mfa/totp/verify:
+    post:
+      summary: Verify TOTP code (activates MFA)
+      tags: [MFA]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string, pattern: '^\d{6}$' }
+      responses:
+        '200': { description: MFA enabled }
+
+  /auth/mfa/totp/disable:
+    post:
+      summary: Disable MFA
+      tags: [MFA]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string, pattern: '^\d{6}$' }
+      responses:
+        '200': { description: MFA disabled }
+
+  /auth/webauthn/setup:
+    post:
+      summary: Begin passkey registration
+      tags: [WebAuthn]
+      responses:
+        '200': { description: WebAuthn options }
+
+  /auth/webauthn/verify:
+    post:
+      summary: Complete passkey registration
+      tags: [WebAuthn]
+      responses:
+        '200': { description: Passkey registered }
+
+  /auth/sessions:
+    get:
+      summary: List active sessions
+      tags: [Sessions]
+      responses:
+        '200':
+          description: Active sessions
+    delete:
+      summary: Revoke all sessions
+      tags: [Sessions]
+      responses:
+        '200': { description: All sessions revoked }
+
+  /auth/sessions/{id}:
+    delete:
+      summary: Revoke specific session
+      tags: [Sessions]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Session revoked }
+
+  /api-keys:
+    get:
+      summary: List API keys
+      tags: [API Keys]
+      responses:
+        '200': { description: API keys }
+    post:
+      summary: Create API key
+      tags: [API Keys]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                scopes: { type: array, items: { type: string } }
+                expiresAt: { type: string, format: date-time }
+      responses:
+        '201':
+          description: API key created (key shown ONCE)
+
+  /orgs:
+    get:
+      summary: List user's organizations
+      tags: [Organizations]
+      responses:
+        '200': { description: Organizations }
+    post:
+      summary: Create organization
+      tags: [Organizations]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, slug]
+              properties:
+                name: { type: string }
+                slug: { type: string, pattern: '^[a-z0-9-]+$' }
+                description: { type: string }
+      responses:
+        '201': { description: Organization created }
+
+  /admin/users:
+    get:
+      summary: List all users (admin)
+      tags: [Admin]
+      responses:
+        '200': { description: Users with pagination }
+    parameters:
+      - in: query
+        name: page
+        schema: { type: integer, default: 1 }
+      - in: query
+        name: perPage
+        schema: { type: integer, default: 20 }
+      - in: query
+        name: search
+        schema: { type: string }

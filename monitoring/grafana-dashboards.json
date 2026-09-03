@@ -1,0 +1,109 @@
+{
+  "title": "AuthCore Production Dashboard",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "tags": ["authcore", "production"],
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Login Rate (per minute)",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(authcore_user_login_total[5m])) * 60",
+          "legendFormat": "logins/min"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+    },
+    {
+      "id": 2,
+      "title": "Login Failure Rate",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(authcore_user_login_failed_total[5m])) / sum(rate(authcore_user_login_total[5m]))",
+          "legendFormat": "failure rate"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+    },
+    {
+      "id": 3,
+      "title": "API Latency (p50/p95/p99)",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(authcore_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(authcore_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(authcore_http_request_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "p99"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 }
+    },
+    {
+      "id": 4,
+      "title": "Error Rate (5xx)",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(authcore_http_requests_total{status=~\"5..\"}[5m])) / sum(rate(authcore_http_requests_total[5m]))",
+          "legendFormat": "5xx rate"
+        }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 }
+    },
+    {
+      "id": 5,
+      "title": "Active Sessions",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "authcore_active_sessions",
+          "legendFormat": "active"
+        }
+      ],
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 16 }
+    },
+    {
+      "id": 6,
+      "title": "Database Connection Pool",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "authcore_db_pool_in_use / authcore_db_pool_total",
+          "legendFormat": "in_use/total"
+        }
+      ],
+      "gridPos": { "h": 6, "w": 9, "x": 6, "y": 16 }
+    },
+    {
+      "id": 7,
+      "title": "Redis Memory",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "authcore_redis_memory_bytes / 1024 / 1024",
+          "legendFormat": "MB"
+        }
+      ],
+      "gridPos": { "h": 6, "w": 9, "x": 15, "y": 16 }
+    }
+  ]
+}

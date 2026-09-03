@@ -1,0 +1,19 @@
+{
+  "name": "@authcore/sdk",
+  "version": "1.0.0",
+  "description": "Official TypeScript SDK for AuthCore",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest"
+  },
+  "keywords": ["authcore", "auth", "authentication", "oidc", "oauth"],
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^1.0.0",
+    "@types/node": "^20.0.0"
+  }
+}

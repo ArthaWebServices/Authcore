@@ -1,0 +1,70 @@
+groups:
+  - name: authcore.critical
+    rules:
+      - alert: AuthCoreDown
+        expr: up{job="authcore"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "AuthCore instance is down"
+          description: "Instance {{ $labels.instance }} has been unreachable for 2 minutes."
+
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(authcore_http_requests_total{status=~"5.."}[5m]))
+          / sum(rate(authcore_http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Error rate > 5%"
+          description: "5xx error rate is {{ $value | humanizePercentage }} over the last 5 minutes."
+
+      - alert: HighLoginFailureRate
+        expr: |
+          sum(rate(authcore_user_login_failed_total[5m]))
+          / sum(rate(authcore_user_login_total[5m])) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Login failure rate > 50%"
+          description: "Possible credential-stuffing attack. Failed: {{ $value | humanizePercentage }}"
+
+      - alert: DatabaseConnectionPoolExhausted
+        expr: authcore_db_pool_in_use / authcore_db_pool_total > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "DB pool > 90% used"
+          description: "Connection pool nearly exhausted on {{ $labels.instance }}."
+
+      - alert: APILatencyP99High
+        expr: |
+          histogram_quantile(0.99, sum(rate(authcore_http_request_duration_seconds_bucket[5m])) by (le)) > 1.0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p99 latency > 1s"
+          description: "p99 = {{ $value }}s"
+
+      - alert: RedisDown
+        expr: authcore_redis_connected == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "AuthCore cannot reach Redis. Rate limiting and sessions are degraded."
+
+      - alert: WebhookBacklog
+        expr: authcore_webhook_pending_deliveries > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Webhook delivery backlog > 100"
+          description: "{{ $value }} webhook deliveries pending."

@@ -1,0 +1,15 @@
+dist/
+node_modules/
+coverage/
+*.log
+.env
+.env.local
+.env.*.local
+*.tsbuildinfo
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+*.pem
+*.key
