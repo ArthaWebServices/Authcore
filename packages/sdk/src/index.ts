@@ -353,11 +353,11 @@ export class AuthCore {
     });
 
     if (!res.ok) {
-      const errorBody = await res.json().catch(() => ({}));
+      const errorBody = await res.json().catch(() => ({})) as Record<string, unknown>;
       throw new AuthCoreError(
-        errorBody.code ?? 'UNKNOWN_ERROR',
+        (errorBody.code as string) ?? 'UNKNOWN_ERROR',
         res.status,
-        errorBody.message ?? res.statusText,
+        (errorBody.message as string) ?? res.statusText,
         errorBody
       );
     }

@@ -43,7 +43,7 @@ const BATCH_SIZE = 1000;
 export class ClerkToAuthCoreMigrator {
   private readonly prisma: PrismaClient;
   private readonly dryRun: boolean;
-  private readonly clerkUsers: ClerkUser[] = [];
+  private clerkUsers: ClerkUser[] = [];
 
   constructor(prisma: PrismaClient, dryRun: boolean = false) {
     this.prisma = prisma;

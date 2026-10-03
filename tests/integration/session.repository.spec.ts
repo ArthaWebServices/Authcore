@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { SessionRepository, CreateSessionInput } from '../src/modules/sessions/session.repository';
+import { SessionRepository, CreateSessionInput } from '../../apps/api/modules/sessions/session.repository';
 
 const mockSession = {
   id: 'session-123',
@@ -30,7 +30,7 @@ const mockPrismaClient = {
 };
 
 // @ts-expect-error - mock module
-vi.mock('../src/shared/prisma', () => ({
+vi.mock('../../apps/api/shared/prisma', () => ({
   prisma: mockPrismaClient,
 }));
 

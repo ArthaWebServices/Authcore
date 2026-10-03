@@ -2,18 +2,35 @@
   "name": "@authcore/sdk",
   "version": "1.0.0",
   "description": "Official TypeScript SDK for AuthCore",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
-    "test": "vitest"
+    "dev": "tsc -w",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "keywords": ["authcore", "auth", "authentication", "oidc", "oauth"],
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "@authcore/core": "workspace:*",
+    "@authcore/validators": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.4.0",
-    "vitest": "^1.0.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.11.0",
+    "vitest": "^1.3.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

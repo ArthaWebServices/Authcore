@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { UserRepository, CreateUserInput, UpdateUserInput } from '../src/modules/users/user.repository';
+import { UserRepository, CreateUserInput, UpdateUserInput } from '../../apps/api/modules/users/user.repository';
 
 // Mock Prisma
 const mockUser = {
@@ -36,7 +36,7 @@ const mockPrismaClient = {
 };
 
 // @ts-expect-error - mock module
-vi.mock('../src/shared/prisma', () => ({
+vi.mock('../../apps/api/shared/prisma', () => ({
   prisma: mockPrismaClient,
 }));
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { buildApp } from '../src/app';
+import { buildApp } from '../../apps/api/app';
 
 describe('Health Endpoints Integration', () => {
   let app: Awaited<ReturnType<typeof buildApp>>;

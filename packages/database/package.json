@@ -1,0 +1,45 @@
+{
+  "name": "@authcore/database",
+  "version": "0.0.1",
+  "description": "Database client and extensions for AuthCore",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./prisma": {
+      "types": "./dist/prisma.d.ts",
+      "import": "./dist/prisma.mjs",
+      "require": "./dist/prisma.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.10.0",
+    "@authcore/core": "workspace:*"
+  },
+  "devDependencies": {
+    "prisma": "^5.10.0",
+    "typescript": "^5.4.0",
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
